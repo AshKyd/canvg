@@ -76,7 +76,6 @@
   },
   "dependencies": {
     "@types/raf": "^3.4.0",
-    "raf": "^3.4.1",
     "rgbcolor": "^1.0.1",
     "stackblur-canvas": "^2.0.0",
     "svg-pathdata": "^6.0.3"
@@ -116,6 +115,7 @@
     "jest-image-snapshot": "^4.3.0",
     "nano-staged": "^0.8.0",
     "node-fetch": "^2.6.0",
+    "pnpm": "^9.12.3",
     "puppeteer": "^13.0.0",
     "rollup": "^2.67.1",
     "rollup-plugin-swc": "^0.2.1",

@@ -2,7 +2,7 @@
 
 set -e
 
-NODE_ENV=development pnpm build
+NODE_ENV=development npx pnpm build
 cp -R test/browser/ website/build/demo/
 cp -R test/svgs/ website/build/svgs/
 cp dist/umd.js website/build/demo/
