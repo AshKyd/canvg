@@ -1,20 +1,9 @@
-import requestAnimationFrame from 'raf'
-import {
-  RenderingContext2D,
-  Fetch
-} from './types'
-import {
-  compressSpaces,
-  toNumbers
-} from './util'
+import { RenderingContext2D, Fetch } from './types'
+import { compressSpaces, toNumbers } from './util'
 import { Property } from './Property'
 import { ViewPort } from './ViewPort'
 import { Mouse } from './Mouse'
-import {
-  Document,
-  Element,
-  AnimateElement
-} from './Document'
+import { Document, Element, AnimateElement } from './Document'
 
 export interface IScreenOptions {
   /**
@@ -87,12 +76,11 @@ export interface IScreenViewBoxConfig {
   clipY?: number
 }
 
-const defaultWindow = typeof window !== 'undefined'
-  ? window
-  : null
-const defaultFetch = typeof fetch !== 'undefined'
-  ? fetch.bind(undefined) // `fetch` depends on context: `someObject.fetch(...)` will throw error.
-  : undefined
+const defaultWindow = typeof window !== 'undefined' ? window : null
+const defaultFetch =
+  typeof fetch !== 'undefined'
+    ? fetch.bind(undefined) // `fetch` depends on context: `someObject.fetch(...)` will throw error.
+    : undefined
 
 export class Screen {
   static readonly defaultWindow = defaultWindow
@@ -115,15 +103,14 @@ export class Screen {
 
   constructor(
     readonly ctx: RenderingContext2D,
-    {
-      fetch = defaultFetch,
-      window = defaultWindow
-    }: IScreenOptions = {}
+    { fetch = defaultFetch, window = defaultWindow }: IScreenOptions = {}
   ) {
     this.window = window
 
     if (!fetch) {
-      throw new Error(`Can't find 'fetch' in 'globalThis', please provide it via options`)
+      throw new Error(
+        `Can't find 'fetch' in 'globalThis', please provide it via options`
+      )
     }
 
     this.fetch = fetch
@@ -187,8 +174,12 @@ export class Screen {
     clipY = 0
   }: IScreenViewBoxConfig) {
     // aspect ratio - http://www.w3.org/TR/SVG/coords.html#PreserveAspectRatioAttribute
-    const cleanAspectRatio = compressSpaces(aspectRatio).replace(/^defer\s/, '') // ignore defer
-    const [aspectRatioAlign, aspectRatioMeetOrSlice] = cleanAspectRatio.split(' ')
+    const cleanAspectRatio = compressSpaces(aspectRatio).replace(
+      /^defer\s/,
+      ''
+    ) // ignore defer
+    const [aspectRatioAlign, aspectRatioMeetOrSlice] =
+      cleanAspectRatio.split(' ')
     const align = aspectRatioAlign || 'xMidYMid'
     const meetOrSlice = aspectRatioMeetOrSlice || 'meet'
     // calculate scale
@@ -239,27 +230,19 @@ export class Screen {
       const isMeetMinX = meetOrSlice === 'meet' && scaleMin === scaleX
       const isSliceMaxX = meetOrSlice === 'slice' && scaleMax === scaleX
 
-      if (align.startsWith('xMid') && (
-        isMeetMinY || isSliceMaxY
-      )) {
+      if (align.startsWith('xMid') && (isMeetMinY || isSliceMaxY)) {
         ctx.translate(width / 2.0 - finalDesiredWidth / 2.0, 0)
       }
 
-      if (align.endsWith('YMid') && (
-        isMeetMinX || isSliceMaxX
-      )) {
+      if (align.endsWith('YMid') && (isMeetMinX || isSliceMaxX)) {
         ctx.translate(0, height / 2.0 - finalDesiredHeight / 2.0)
       }
 
-      if (align.startsWith('xMax') && (
-        isMeetMinY || isSliceMaxY
-      )) {
+      if (align.startsWith('xMax') && (isMeetMinY || isSliceMaxY)) {
         ctx.translate(width - finalDesiredWidth, 0)
       }
 
-      if (align.endsWith('YMax') && (
-        isMeetMinX || isSliceMaxX
-      )) {
+      if (align.endsWith('YMax') && (isMeetMinX || isSliceMaxX)) {
         ctx.translate(0, height - finalDesiredHeight)
       }
     }
@@ -277,6 +260,7 @@ export class Screen {
       case meetOrSlice === 'slice':
         ctx.scale(scaleMax, scaleMax)
         break
+      default:
     }
 
     // translate
@@ -327,16 +311,17 @@ export class Screen {
     let then = now
     let delta = 0
     const tick = () => {
+      if (!this.intervalId) {
+        return
+      }
+
       now = Date.now()
       delta = now - then
 
       if (delta >= frameDuration) {
         then = now - (delta % frameDuration)
 
-        if (this.shouldUpdate(
-          ignoreAnimation,
-          forceRedraw
-        )) {
+        if (this.shouldUpdate(ignoreAnimation, forceRedraw)) {
           this.render(
             element,
             ignoreDimensions,
@@ -362,7 +347,6 @@ export class Screen {
 
   stop() {
     if (this.intervalId) {
-      requestAnimationFrame.cancel(this.intervalId)
       this.intervalId = null
     }
 
@@ -412,11 +396,7 @@ export class Screen {
     offsetX: number | undefined,
     offsetY: number | undefined
   ) {
-    const {
-      viewPort,
-      ctx,
-      isFirstRender
-    } = this
+    const { viewPort, ctx, isFirstRender } = this
     const canvas = ctx.canvas as HTMLCanvasElement
 
     viewPort.clear()
@@ -428,10 +408,11 @@ export class Screen {
     const widthStyle = element.getStyle('width')
     const heightStyle = element.getStyle('height')
 
-    if (!ignoreDimensions && (
-      isFirstRender
-      || typeof scaleWidth !== 'number' && typeof scaleHeight !== 'number'
-    )) {
+    if (
+      !ignoreDimensions
+      && (isFirstRender
+        || (typeof scaleWidth !== 'number' && typeof scaleHeight !== 'number'))
+    ) {
       // set canvas size
       if (widthStyle.hasValue()) {
         canvas.width = widthStyle.getPixels('x')
@@ -470,9 +451,7 @@ export class Screen {
       element.getAttribute('y', true).setValue(offsetY)
     }
 
-    if (typeof scaleWidth === 'number'
-      || typeof scaleHeight === 'number'
-    ) {
+    if (typeof scaleWidth === 'number' || typeof scaleHeight === 'number') {
       const viewBox = toNumbers(element.getAttribute('viewBox').getString())
       let xRatio = 0
       let yRatio = 0
@@ -482,8 +461,7 @@ export class Screen {
 
         if (widthStyle.hasValue()) {
           xRatio = widthStyle.getPixels('x') / scaleWidth
-        } else
-        if (viewBox[2] && !isNaN(viewBox[2])) {
+        } else if (viewBox[2] && !isNaN(viewBox[2])) {
           xRatio = viewBox[2] / scaleWidth
         }
       }
@@ -493,8 +471,7 @@ export class Screen {
 
         if (heightStyle.hasValue()) {
           yRatio = heightStyle.getPixels('y') / scaleHeight
-        } else
-        if (viewBox[3] && !isNaN(viewBox[3])) {
+        } else if (viewBox[3] && !isNaN(viewBox[3])) {
           yRatio = viewBox[3] / scaleHeight
         }
       }
@@ -512,7 +489,9 @@ export class Screen {
 
       const transformStyle = element.getStyle('transform', true, true)
 
-      transformStyle.setValue(`${transformStyle.getString()} scale(${1.0 / xRatio}, ${1.0 / yRatio})`)
+      transformStyle.setValue(
+        `${transformStyle.getString()} scale(${1.0 / xRatio}, ${1.0 / yRatio})`
+      )
     }
 
     // clear and render
